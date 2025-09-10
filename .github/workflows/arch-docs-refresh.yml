@@ -1,0 +1,30 @@
+name: Weekly Architecture Docs Refresh
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"   # Mondays 07:00 UTC
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OpenHands conversation
+        uses: all-hands-dev/openhands-action@v1
+        with:
+          # You can pass a file path OR literal text here
+          prompt: scripts/prompts/architecture_refresh.j2
+          repository: ${{ github.repository }}      # optional; defaults to current repo anyway
+          selected-branch: main                     # optional
+          base-url: https://app.all-hands.dev       # optional
+          poll: "true"                              # optional
+          timeout-seconds: "1200"                   # optional
+          poll-interval-seconds: "30"               # optional
+          github-token: ${{ secrets.GITHUB_TOKEN }} # optional (reserved for future extensions)
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}

@@ -1,0 +1,79 @@
+name: OpenHands Conversation
+description: Start (and optionally poll) an OpenHands conversation from a prompt or file
+author: All Hands AI
+branding:
+  icon: message-square
+  color: blue
+
+inputs:
+  prompt:
+    description: "Prompt text or path to a prompt file"
+    required: true
+  repository:
+    description: "Repo to pass to OpenHands (defaults to current repo)"
+    required: false
+    default: ""
+  selected-branch:
+    description: "Branch to pass to OpenHands"
+    required: false
+    default: ""
+  base-url:
+    description: "OpenHands API base URL"
+    required: false
+    default: "https://app.all-hands.dev"
+  poll:
+    description: "Poll conversation until it stops (true/false)"
+    required: false
+    default: "true"
+  timeout-seconds:
+    description: "Polling timeout in seconds"
+    required: false
+    default: "1200"
+  poll-interval-seconds:
+    description: "Polling interval in seconds"
+    required: false
+    default: "30"
+  github-token:
+    description: "Optional GitHub token (reserved for future features like posting comments)"
+    required: false
+    default: ""
+  openhands-api-key:
+    description: "OpenHands API key (use secrets.OPENHANDS_API_KEY)"
+    required: true
+
+outputs:
+  conversation-id:
+    description: "Created conversation ID"
+    value: ${{ steps.run.outputs.conversation-id }}
+  status:
+    description: "Final (or last-seen) conversation status"
+    value: ${{ steps.run.outputs.status }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install deps
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Run
+      id: run
+      shell: bash
+      env:
+        OPENHANDS_API_KEY: ${{ inputs.openhands-api-key }}
+        INPUT_PROMPT: ${{ inputs.prompt }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_SELECTED_BRANCH: ${{ inputs.selected-branch }}
+        INPUT_BASE_URL: ${{ inputs.base-url }}
+        INPUT_POLL: ${{ inputs.poll }}
+        INPUT_TIMEOUT: ${{ inputs.timeout-seconds }}
+        INPUT_INTERVAL: ${{ inputs.poll-interval-seconds }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        python "$GITHUB_ACTION_PATH/scripts/openhands_run.py"
