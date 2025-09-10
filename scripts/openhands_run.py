@@ -44,7 +44,7 @@ def get_conversation(session, base_url, conversation_id):
 
 def get_conversation_url(base_url, conversation_id):
     """Construct the conversation URL for the web interface"""
-    return f"{base_url}/conversation/{conversation_id}"
+    return f"{base_url}/conversations/{conversation_id}"
 
 
 def write_outputs(conversation_id, status, conversation_url):
