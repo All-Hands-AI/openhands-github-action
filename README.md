@@ -220,21 +220,6 @@ The action will:
 - Exit with code 1 for API errors or terminal conversation states (`FAILED`, `ERROR`, `CANCELLED`)
 - Exit with code 0 for successful completion
 
-## Limitations
-
-- Maximum polling timeout: configurable (default 20 minutes)
-- Requires valid OpenHands API key
-- Conversation status polling may have slight delays
-- File prompts must be accessible in the workflow workspace
-
-## Future Features
-
-Planned enhancements include:
-- Automatic PR/issue commenting with results
-- Trajectory output saving as artifacts
-- Enhanced error reporting and retry logic
-- Integration with GitHub Apps for better permissions
-
 ## Contributing
 
 This action is maintained by All Hands AI. For issues, feature requests, or contributions, please visit the [repository](https://github.com/All-Hands-AI/openhands-github-action).
@@ -247,4 +232,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - 📖 [OpenHands Documentation](https://docs.all-hands.dev)
 - 💬 [Community Discord](https://discord.gg/ESHStjSjD4)
+- 💬 [Join our Slack](https://dub.sh/openhands)
 - 🐛 [Report Issues](https://github.com/All-Hands-AI/openhands-github-action/issues)
