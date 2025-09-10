@@ -1,0 +1,42 @@
+name: OpenHands Manual Task
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Prompt for OpenHands (text or file path)'
+        required: true
+        type: string
+      selected-branch:
+        description: 'Branch to work on (optional)'
+        required: false
+        type: string
+        default: 'main'
+      timeout-seconds:
+        description: 'Timeout in seconds'
+        required: false
+        type: string
+        default: '1200'
+
+jobs:
+  run-openhands:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OpenHands conversation
+        uses: all-hands-dev/openhands-action@v1
+        with:
+          prompt: ${{ inputs.prompt }}
+          repository: ${{ github.repository }}
+          selected-branch: ${{ inputs.selected-branch }}
+          base-url: https://app.all-hands.dev
+          poll: "true"
+          timeout-seconds: ${{ inputs.timeout-seconds }}
+          poll-interval-seconds: "30"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
