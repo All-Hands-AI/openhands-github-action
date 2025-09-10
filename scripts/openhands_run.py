@@ -42,12 +42,18 @@ def get_conversation(session, base_url, conversation_id):
     return r.json()
 
 
-def write_outputs(conversation_id, status):
+def get_conversation_url(base_url, conversation_id):
+    """Construct the conversation URL for the web interface"""
+    return f"{base_url}/conversation/{conversation_id}"
+
+
+def write_outputs(conversation_id, status, conversation_url):
     github_output = os.getenv("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a", encoding="utf-8") as f:
             f.write(f"conversation-id={conversation_id}\n")
             f.write(f"status={status}\n")
+            f.write(f"conversation-url={conversation_url}\n")
 
 
 def main():
@@ -85,10 +91,15 @@ def main():
         print(f"Unexpected response: {json.dumps(created, indent=2)}", file=sys.stderr)
         sys.exit(1)
 
+    conversation_url = get_conversation_url(base_url, conversation_id)
+    
     print(f"Conversation created: {conversation_id} (status={status})")
+    print("=" * 60)
+    print(f"🔗 View conversation: {conversation_url}")
+    print("=" * 60)
 
     if not poll:
-        write_outputs(conversation_id, status or "UNKNOWN")
+        write_outputs(conversation_id, status or "UNKNOWN", conversation_url)
         return
 
     start = time.time()
@@ -109,7 +120,7 @@ def main():
 
         time.sleep(interval)
 
-    write_outputs(conversation_id, last_status)
+    write_outputs(conversation_id, last_status, conversation_url)
 
     if last_status in {"FAILED", "ERROR", "CANCELLED"}:
         # Fail the step if terminal error state

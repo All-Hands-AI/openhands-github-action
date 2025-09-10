@@ -29,7 +29,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run OpenHands conversation
-        uses: All-Hands-AI/openhands-github-action@v1
+        id: openhands
+        uses: All-Hands-AI/openhands-github-action@main
         with:
           prompt: ${{ inputs.prompt }}
           repository: ${{ github.repository }}
@@ -40,3 +41,14 @@ jobs:
           poll-interval-seconds: "30"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
+
+      - name: Display conversation link
+        if: always()
+        run: |
+          echo "## 🔗 OpenHands Conversation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Conversation ID:** ${{ steps.openhands.outputs.conversation-id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ steps.openhands.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**View Conversation:** [${{ steps.openhands.outputs.conversation-url }}](${{ steps.openhands.outputs.conversation-url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Click the link above to view the full conversation and results in the OpenHands web interface." >> $GITHUB_STEP_SUMMARY

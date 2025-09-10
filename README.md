@@ -15,7 +15,7 @@ A reusable composite GitHub Action that starts OpenHands conversations from prom
 
 ```yaml
 - name: Run OpenHands conversation
-  uses: All-Hands-AI/openhands-github-action@v1
+  uses: All-Hands-AI/openhands-github-action@main
   with:
     prompt: "Please review the code and suggest improvements"
     openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
@@ -41,6 +41,7 @@ A reusable composite GitHub Action that starts OpenHands conversations from prom
 |--------|-------------|
 | `conversation-id` | Created conversation ID |
 | `status` | Final (or last-seen) conversation status |
+| `conversation-url` | URL to view the conversation in the web interface |
 
 ## Usage Examples
 
@@ -57,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run code review
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: All-Hands-AI/openhands-github-action@main
         with:
           prompt: "Please review the recent changes and provide feedback"
           openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
@@ -82,7 +83,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Update documentation
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: All-Hands-AI/openhands-github-action@main
         with:
           prompt: scripts/prompts/update_docs.md
           repository: ${{ github.repository }}
@@ -104,7 +105,7 @@ jobs:
       
       - name: Run complex OpenHands task
         id: openhands
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: All-Hands-AI/openhands-github-action@main
         with:
           prompt: |
             Please analyze the codebase and:
@@ -124,6 +125,7 @@ jobs:
         run: |
           echo "Conversation ID: ${{ steps.openhands.outputs.conversation-id }}"
           echo "Final Status: ${{ steps.openhands.outputs.status }}"
+          echo "View conversation: ${{ steps.openhands.outputs.conversation-url }}"
 ```
 
 ### Without Polling
@@ -139,7 +141,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Start OpenHands task
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: All-Hands-AI/openhands-github-action@main
         with:
           prompt: "Start working on the feature request in issue #123"
           poll: "false"  # Don't wait for completion

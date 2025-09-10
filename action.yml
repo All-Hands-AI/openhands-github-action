@@ -48,6 +48,9 @@ outputs:
   status:
     description: "Final (or last-seen) conversation status"
     value: ${{ steps.run.outputs.status }}
+  conversation-url:
+    description: "URL to view the conversation in the web interface"
+    value: ${{ steps.run.outputs.conversation-url }}
 
 runs:
   using: "composite"
