@@ -1,0 +1,99 @@
+name: Compare Single-Stage vs Two-Stage Workflows
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Test prompt for OpenHands'
+        required: true
+        default: 'Please provide a brief analysis of this repository.'
+
+jobs:
+  single-stage:
+    name: Single-Stage (Legacy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run single-stage workflow
+        id: single
+        uses: ./
+        with:
+          prompt: ${{ github.event.inputs.prompt }}
+          repository: ${{ github.repository }}
+          selected-branch: ${{ github.ref_name }}
+          poll: "true"
+          timeout-seconds: "300"
+          poll-interval-seconds: "10"
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
+      
+      - name: Display single-stage results
+        run: |
+          echo "Conversation ID: ${{ steps.single.outputs.conversation-id }}"
+          echo "Final Status: ${{ steps.single.outputs.status }}"
+          echo "Conversation URL: ${{ steps.single.outputs.conversation-url }}"
+
+  two-stage:
+    name: Two-Stage (New)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Stage 1: Create conversation
+      - name: Create conversation
+        id: create
+        uses: ./create-conversation
+        with:
+          prompt: ${{ github.event.inputs.prompt }}
+          repository: ${{ github.repository }}
+          selected-branch: ${{ github.ref_name }}
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
+      
+      - name: Show early access to conversation URL
+        run: |
+          echo "🎉 Conversation created immediately!"
+          echo "Conversation ID: ${{ steps.create.outputs.conversation-id }}"
+          echo "Conversation URL: ${{ steps.create.outputs.conversation-url }}"
+          echo "Initial Status: ${{ steps.create.outputs.status }}"
+          echo ""
+          echo "💡 At this point, you could comment the URL on a PR or take other actions"
+          echo "    while the conversation runs in the background."
+      
+      # Stage 2: Poll and download trajectory
+      - name: Poll and download trajectory
+        id: poll
+        uses: ./poll-conversation
+        with:
+          conversation-id: ${{ steps.create.outputs.conversation-id }}
+          timeout-seconds: "300"
+          poll-interval-seconds: "10"
+          download-trajectory: "true"
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
+      
+      - name: Display two-stage results
+        run: |
+          echo "Final Status: ${{ steps.poll.outputs.status }}"
+          echo "Trajectory File: ${{ steps.poll.outputs.trajectory-file }}"
+          echo "Last Message File: ${{ steps.poll.outputs.last-message-file }}"
+          echo "Conversation URL: ${{ steps.poll.outputs.conversation-url }}"
+      
+      # Show the extracted last agent message
+      - name: Show last agent message (two-stage advantage)
+        if: steps.poll.outputs.last-message-file
+        run: |
+          echo "🎉 Two-stage workflow advantage: Last agent message extracted!"
+          echo "=== Last Agent Message ==="
+          cat "${{ steps.poll.outputs.last-message-file }}"
+          echo ""
+          echo "=== Using standalone utility ==="
+          python scripts/extract_last_message.py "${{ steps.poll.outputs.trajectory-file }}" --print-only
+      
+      # Upload trajectory and message as artifacts (only available in two-stage)
+      - name: Upload trajectory artifacts
+        uses: actions/upload-artifact@v4
+        if: always() && steps.poll.outputs.trajectory-file
+        with:
+          name: two-stage-trajectory-${{ github.run_number }}
+          path: |
+            ${{ steps.poll.outputs.trajectory-file }}
+            ${{ steps.poll.outputs.last-message-file }}
+          retention-days: 7

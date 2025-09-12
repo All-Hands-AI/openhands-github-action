@@ -1,0 +1,89 @@
+name: Test Two-Stage Workflow
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Test prompt for OpenHands'
+        required: true
+        default: 'Please analyze this repository structure and provide a brief summary.'
+
+jobs:
+  test-two-stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # Stage 1: Create conversation
+      - name: Create OpenHands conversation
+        id: create
+        uses: ./create-conversation
+        with:
+          prompt: ${{ github.event.inputs.prompt }}
+          repository: ${{ github.repository }}
+          selected-branch: ${{ github.ref_name }}
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
+      
+      - name: Display conversation info
+        run: |
+          echo "Conversation ID: ${{ steps.create.outputs.conversation-id }}"
+          echo "Conversation URL: ${{ steps.create.outputs.conversation-url }}"
+          echo "Initial Status: ${{ steps.create.outputs.status }}"
+      
+      # Stage 2: Poll and download trajectory
+      - name: Poll conversation and download trajectory
+        id: poll
+        uses: ./poll-conversation
+        with:
+          conversation-id: ${{ steps.create.outputs.conversation-id }}
+          timeout-seconds: "300"  # 5 minutes for testing
+          poll-interval-seconds: "10"  # Check every 10 seconds
+          download-trajectory: "true"
+          openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
+      
+      - name: Display final results
+        run: |
+          echo "Final Status: ${{ steps.poll.outputs.status }}"
+          echo "Trajectory File: ${{ steps.poll.outputs.trajectory-file }}"
+          echo "Last Message File: ${{ steps.poll.outputs.last-message-file }}"
+      
+      # Test the new extract-message action
+      - name: Extract message using action
+        id: extract
+        uses: ./extract-message
+        if: steps.poll.outputs.trajectory-file
+        with:
+          trajectory-file: ${{ steps.poll.outputs.trajectory-file }}
+          output-file: "action_extracted_message.json"
+          format: "pretty"
+      
+      # Show the last agent message content
+      - name: Display last agent message
+        if: steps.poll.outputs.last-message-file
+        run: |
+          echo "=== Last Agent Message (from poll action) ==="
+          cat "${{ steps.poll.outputs.last-message-file }}"
+          echo ""
+          echo "=== Message extracted by extract-message action ==="
+          if [ -f "action_extracted_message.json" ]; then
+            cat "action_extracted_message.json"
+          fi
+          echo ""
+          echo "=== Message Content Only (using CLI utility) ==="
+          python scripts/extract_last_message.py "${{ steps.poll.outputs.trajectory-file }}" --print-only
+          echo ""
+          echo "=== Extract Action Outputs ==="
+          echo "Action: ${{ steps.extract.outputs.action }}"
+          echo "Timestamp: ${{ steps.extract.outputs.timestamp }}"
+          echo "Message File: ${{ steps.extract.outputs.message-file }}"
+      
+      # Upload trajectory and message as artifacts
+      - name: Upload trajectory artifacts
+        uses: actions/upload-artifact@v4
+        if: always() && steps.poll.outputs.trajectory-file
+        with:
+          name: test-trajectory-${{ github.run_number }}
+          path: |
+            ${{ steps.poll.outputs.trajectory-file }}
+            ${{ steps.poll.outputs.last-message-file }}
+            action_extracted_message.json
+          retention-days: 7
