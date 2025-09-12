@@ -1,0 +1,50 @@
+name: OpenHands Extract Message
+description: Extract the last agent message from an OpenHands trajectory JSON file
+author: All Hands AI
+branding:
+  icon: message-circle
+  color: blue
+
+inputs:
+  trajectory-file:
+    description: "Path to the trajectory JSON file"
+    required: true
+  output-file:
+    description: "Output file for the extracted message (optional, defaults to stdout)"
+    required: false
+    default: ""
+  format:
+    description: "Output format: 'json' (default), 'message-only', or 'pretty'"
+    required: false
+    default: "json"
+
+outputs:
+  message-file:
+    description: "Path to the extracted message file (if output-file was specified)"
+    value: ${{ steps.extract.outputs.message-file }}
+  action:
+    description: "The action type of the extracted message (message or finish)"
+    value: ${{ steps.extract.outputs.action }}
+  message:
+    description: "The extracted message content"
+    value: ${{ steps.extract.outputs.message }}
+  timestamp:
+    description: "Timestamp of the extracted message"
+    value: ${{ steps.extract.outputs.timestamp }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Extract message
+      id: extract
+      shell: bash
+      env:
+        INPUT_TRAJECTORY_FILE: ${{ inputs.trajectory-file }}
+        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+        INPUT_FORMAT: ${{ inputs.format }}
+      run: |
+        python "$GITHUB_ACTION_PATH/extract_last_message.py"

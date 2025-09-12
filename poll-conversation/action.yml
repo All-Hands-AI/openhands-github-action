@@ -1,0 +1,70 @@
+name: OpenHands Poll Conversation
+description: Poll an OpenHands conversation until completion and download trajectory
+author: All Hands AI
+branding:
+  icon: download
+  color: green
+
+inputs:
+  conversation-id:
+    description: "Conversation ID to poll"
+    required: true
+  base-url:
+    description: "OpenHands API base URL"
+    required: false
+    default: "https://app.all-hands.dev"
+  timeout-seconds:
+    description: "Polling timeout in seconds"
+    required: false
+    default: "1200"
+  poll-interval-seconds:
+    description: "Polling interval in seconds"
+    required: false
+    default: "30"
+  openhands-api-key:
+    description: "OpenHands API key (use secrets.OPENHANDS_API_KEY)"
+    required: true
+  download-trajectory:
+    description: "Whether to download trajectory when conversation completes (true/false)"
+    required: false
+    default: "true"
+
+outputs:
+  status:
+    description: "Final conversation status"
+    value: ${{ steps.poll.outputs.status }}
+  trajectory-file:
+    description: "Path to downloaded trajectory file (if download-trajectory is true)"
+    value: ${{ steps.poll.outputs.trajectory-file }}
+  last-message-file:
+    description: "Path to extracted last agent message file (if download-trajectory is true)"
+    value: ${{ steps.poll.outputs.last-message-file }}
+  conversation-url:
+    description: "URL to view the conversation in the web interface"
+    value: ${{ steps.poll.outputs.conversation-url }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install deps
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Poll conversation and download trajectory
+      id: poll
+      shell: bash
+      env:
+        OPENHANDS_API_KEY: ${{ inputs.openhands-api-key }}
+        INPUT_CONVERSATION_ID: ${{ inputs.conversation-id }}
+        INPUT_BASE_URL: ${{ inputs.base-url }}
+        INPUT_TIMEOUT: ${{ inputs.timeout-seconds }}
+        INPUT_INTERVAL: ${{ inputs.poll-interval-seconds }}
+        INPUT_DOWNLOAD_TRAJECTORY: ${{ inputs.download-trajectory }}
+      run: |
+        python "$GITHUB_ACTION_PATH/poll_conversation.py"
