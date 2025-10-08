@@ -15,7 +15,7 @@ A reusable composite GitHub Action that starts OpenHands conversations from prom
 
 ```yaml
 - name: Run OpenHands conversation
-  uses: All-Hands-AI/openhands-github-action@v1
+  uses: OpenHands/openhands-github-action@v1
   with:
     prompt: "Please review the code and suggest improvements"
     openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run code review
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: OpenHands/openhands-github-action@v1
         with:
           prompt: "Please review the recent changes and provide feedback"
           openhands-api-key: ${{ secrets.OPENHANDS_API_KEY }}
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Update documentation
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: OpenHands/openhands-github-action@v1
         with:
           prompt: scripts/prompts/update_docs.md
           repository: ${{ github.repository }}
@@ -105,7 +105,7 @@ jobs:
       
       - name: Run complex OpenHands task
         id: openhands
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: OpenHands/openhands-github-action@v1
         with:
           prompt: |
             Please analyze the codebase and:
@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Start OpenHands task
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: OpenHands/openhands-github-action@v1
         with:
           prompt: "Start working on the feature request in issue #123"
           poll: "false"  # Don't wait for completion
@@ -222,7 +222,7 @@ The action will:
 
 ## Contributing
 
-This action is maintained by All Hands AI. For issues, feature requests, or contributions, please visit the [repository](https://github.com/All-Hands-AI/openhands-github-action).
+This action is maintained by All Hands AI. For issues, feature requests, or contributions, please visit the [repository](https://github.com/OpenHands/openhands-github-action).
 
 ## License
 
@@ -233,4 +233,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - 📖 [OpenHands Documentation](https://docs.all-hands.dev)
 - 💬 [Community Discord](https://discord.gg/ESHStjSjD4)
 - 💬 [Join our Slack](https://dub.sh/openhands)
-- 🐛 [Report Issues](https://github.com/All-Hands-AI/openhands-github-action/issues)
+- 🐛 [Report Issues](https://github.com/OpenHands/openhands-github-action/issues)

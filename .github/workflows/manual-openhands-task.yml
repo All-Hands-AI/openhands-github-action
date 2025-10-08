@@ -30,7 +30,7 @@ jobs:
 
       - name: Run OpenHands conversation
         id: openhands
-        uses: All-Hands-AI/openhands-github-action@v1
+        uses: OpenHands/openhands-github-action@v1
         with:
           prompt: ${{ inputs.prompt }}
           repository: ${{ github.repository }}
